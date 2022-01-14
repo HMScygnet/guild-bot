@@ -1,7 +1,7 @@
 import qqbot
 from qqbot.model.message import Message
-from modules.priconne.bot_api import get_token
-from modules.priconne.service import on_message
+from bot.bot_api import get_token
+from bot.service import on_message
 
 
 token = get_token()

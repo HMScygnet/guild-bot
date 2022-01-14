@@ -1,7 +1,8 @@
 import qqbot
+from .config import __bot__ as config
 
-appid = ""
-token = ""
+appid = config.APPID
+token = config.TOKEN
 
 def get_token():
     _token = qqbot.Token(appid, token)

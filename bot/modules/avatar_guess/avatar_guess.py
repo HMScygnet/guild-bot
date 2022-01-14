@@ -11,8 +11,9 @@ from PIL import Image
 import qqbot
 from qqbot import Message
 
-from ..priconne import _pcr_data,chara,bot_api
-
+from ..priconne import _pcr_data,chara
+from ... import bot_api
+from ...config import __bot__ as config
 
 from . import GameMaster
 
@@ -20,7 +21,8 @@ PATCH_SIZE = 32
 ONE_TURN_TIME = 20
 DB_PATH = os.path.join(os.path.dirname(__file__),"pcr_avatar_guess.db")
 BLACKLIST_ID = [1072, 1908, 4031, 9000]
-res = 'C:/Program Files/apache/public/res/img'
+res_path = config.RES_PATH
+res_url = config.RES_URL
 
 
 msg_send = bot_api.msg_send
@@ -47,8 +49,7 @@ async def avatar_guess(ev, message: Message):
     gid = message.guild_id
     mid = message.id
     if gm.is_playing(gid):
-        send = qqbot.MessageSendRequest("游戏仍在进行中…", mid)
-        await msg_api.post_message(cid, send)
+        await msg_send(mid,cid,'游戏仍在进行中...')
         return
     with gm.start_game(gid) as game:
         ids = list(_pcr_data.CHARA_NAME.keys())
@@ -62,14 +63,14 @@ async def avatar_guess(ev, message: Message):
         l = random.randint(0, w - PATCH_SIZE)
         u = random.randint(0, h - PATCH_SIZE)
         cropped = img.crop((l, u, l + PATCH_SIZE, u + PATCH_SIZE))
-        cropped.save(os.path.join(res,'avatar_guess.png'))
+        cropped.save(os.path.join(res_path,'avatar_guess.png'))
         await msg_send(mid,cid,f"猜猜这个图片是哪位角色头像的一部分?({ONE_TURN_TIME}s后公布答案)",
-                                        image='https://img.kokorobot.vip/img/avatar_guess.png')
+                                        image=res_url + 'avatar_guess.png')
         await asyncio.sleep(ONE_TURN_TIME)
         if game.winner:
             return
         await msg_send(mid,cid,f"正确答案是：{c.name}\n很遗憾，没有人答对~",
-                                        image=f'https://img.kokorobot.vip/img/priconne/unit/{basename}')
+                                        image=res_url + f'/priconne/unit/{basename}')
 
 async def on_input_chara_name(ev,message: Message):
     gid = message.guild_id
@@ -89,4 +90,4 @@ async def on_input_chara_name(ev,message: Message):
             n = game.record()
             await msg_send(f"正确答案是：{c.name}\n<@{uid}>猜对了，真厉害！TA已经猜对{n}次了~\n(此轮游戏将在几秒后自动结束，请耐心等待)",
                                             mid,
-                                            image=f'https://img.kokorobot.vip/img/priconne/unit/{basename}')
+                                            image=res_url + f'/priconne/unit/{basename}')

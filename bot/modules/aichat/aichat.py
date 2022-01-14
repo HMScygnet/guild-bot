@@ -4,7 +4,7 @@ import random
 
 import qqbot
 from qqbot.model.message import Message
-from ..priconne import bot_api
+from ... import bot_api
 
 
 from tencentcloud.common import credential

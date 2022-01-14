@@ -1,9 +1,9 @@
 import qqbot
 from qqbot import Message
 from . import bot_api
-from ..avatar_guess.avatar_guess import avatar_guess, on_input_chara_name
-from ..aichat.aichat import ai_reply
-from ..pcr_rank.rank import pcr_rank_choose, pcr_rank_bili, pcr_rank_tw
+from .modules.avatar_guess.avatar_guess import avatar_guess, on_input_chara_name
+from .modules.aichat.aichat import ai_reply
+from .modules.pcr_rank.rank import pcr_rank_choose, pcr_rank_bili, pcr_rank_tw
 
 async def on_message(ev, message: Message):
     msg = message.content
