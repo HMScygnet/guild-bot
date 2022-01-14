@@ -65,7 +65,7 @@ async def avatar_guess(ev, message: Message):
         cropped = img.crop((l, u, l + PATCH_SIZE, u + PATCH_SIZE))
         cropped.save(os.path.join(res_path,'avatar_guess.png'))
         await msg_send(mid,cid,f"猜猜这个图片是哪位角色头像的一部分?({ONE_TURN_TIME}s后公布答案)",
-                                        image=res_url + 'avatar_guess.png')
+                                        image=res_url + '/avatar_guess.png')
         await asyncio.sleep(ONE_TURN_TIME)
         if game.winner:
             return
@@ -88,6 +88,5 @@ async def on_input_chara_name(ev,message: Message):
             basename = os.path.basename(c.icon.path)
             game.winner = uid
             n = game.record()
-            await msg_send(f"正确答案是：{c.name}\n<@{uid}>猜对了，真厉害！TA已经猜对{n}次了~\n(此轮游戏将在几秒后自动结束，请耐心等待)",
-                                            mid,
-                                            image=res_url + f'/priconne/unit/{basename}')
+            await msg_send(mid,cid,f"正确答案是：{c.name}\n<@{uid}>猜对了，真厉害！TA已经猜对{n}次了~\n(此轮游戏将在几秒后自动结束，请耐心等待)",
+                            image=res_url + f'/priconne/unit/{basename}')
