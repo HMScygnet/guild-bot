@@ -4,7 +4,7 @@ import random
 
 import qqbot
 from qqbot.model.message import Message
-
+from ..priconne import bot_api
 
 
 from tencentcloud.common import credential
@@ -21,16 +21,10 @@ try:
 except ImportError:
     import json
 
-def get_token():
-    appid = ""
-    token = ""
-    token = qqbot.Token(appid, token)
-    return token
-
-msg_api = qqbot.AsyncMessageAPI(get_token(),False)
+msg_send = bot_api.msg_send
 
 
-DEFAULT_AI_CHANCE = 10   # 默认的AI回复概率
+DEFAULT_AI_CHANCE = 10   # AI回复概率
 SecretId = "" #  填你的SecretId
 SecretKey = ""#  填你的SecretKey
 
@@ -58,7 +52,7 @@ def aichat(text):
 
 
 
-async def ai_reply(ev, message):
+async def ai_reply(ev, message: Message):
     msg = message.content
     mid = message.id
     cid = message.channel_id
@@ -70,7 +64,6 @@ async def ai_reply(ev, message):
             return
         try: 
             msg = aichat(msg)
-            send = qqbot.MessageSendRequest(msg,mid)
-            await msg_api.post_message(cid,send)
+            await msg_send(mid,cid,msg)
         except TencentCloudSDKException as err: 
             print(err) 

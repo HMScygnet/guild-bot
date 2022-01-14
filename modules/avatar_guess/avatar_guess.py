@@ -11,7 +11,7 @@ from PIL import Image
 import qqbot
 from qqbot import Message
 
-from . import _pcr_data,chara
+from ..priconne import _pcr_data,chara,bot_api
 
 
 from . import GameMaster
@@ -22,13 +22,8 @@ DB_PATH = os.path.join(os.path.dirname(__file__),"pcr_avatar_guess.db")
 BLACKLIST_ID = [1072, 1908, 4031, 9000]
 res = 'C:/Program Files/apache/public/res/img'
 
-def get_token():
-    appid = ""
-    token = ""
-    token = qqbot.Token(appid, token)
-    return token
 
-msg_api = qqbot.AsyncMessageAPI(get_token(),False)
+msg_send = bot_api.msg_send
 gm = GameMaster(DB_PATH)
 
 '''
@@ -46,7 +41,7 @@ async def description_guess_group_ranking(bot, ev: CQEvent):
     await bot.send(ev, "\n".join(msg))
 '''
 
-async def avatar_guess(ev, message):
+async def avatar_guess(ev, message: Message):
     msg = message.content
     cid = message.channel_id
     gid = message.guild_id
@@ -68,18 +63,15 @@ async def avatar_guess(ev, message):
         u = random.randint(0, h - PATCH_SIZE)
         cropped = img.crop((l, u, l + PATCH_SIZE, u + PATCH_SIZE))
         cropped.save(os.path.join(res,'avatar_guess.png'))
-        send = qqbot.MessageSendRequest(f"猜猜这个图片是哪位角色头像的一部分?({ONE_TURN_TIME}s后公布答案)", 
-                                        mid,
+        await msg_send(mid,cid,f"猜猜这个图片是哪位角色头像的一部分?({ONE_TURN_TIME}s后公布答案)",
                                         image='https://img.kokorobot.vip/img/avatar_guess.png')
-        await msg_api.post_message(cid, send)
         await asyncio.sleep(ONE_TURN_TIME)
         if game.winner:
             return
-        send = qqbot.MessageSendRequest(f"正确答案是：{c.name}\n很遗憾，没有人答对~",
-                                        mid,
+        await msg_send(mid,cid,f"正确答案是：{c.name}\n很遗憾，没有人答对~",
                                         image=f'https://img.kokorobot.vip/img/priconne/unit/{basename}')
-        await msg_api.post_message(cid, send)
-async def on_input_chara_name(ev,message):
+
+async def on_input_chara_name(ev,message: Message):
     gid = message.guild_id
     cid = message.channel_id
     msg = message.content
@@ -95,7 +87,6 @@ async def on_input_chara_name(ev,message):
             basename = os.path.basename(c.icon.path)
             game.winner = uid
             n = game.record()
-            send = qqbot.MessageSendRequest(f"正确答案是：{c.name}\n<@{uid}>猜对了，真厉害！TA已经猜对{n}次了~\n(此轮游戏将在几秒后自动结束，请耐心等待)",
+            await msg_send(f"正确答案是：{c.name}\n<@{uid}>猜对了，真厉害！TA已经猜对{n}次了~\n(此轮游戏将在几秒后自动结束，请耐心等待)",
                                             mid,
                                             image=f'https://img.kokorobot.vip/img/priconne/unit/{basename}')
-            await msg_api.post_message(cid, send)
