@@ -1,6 +1,7 @@
 from enum import auto
 import qqbot
 import re
+from functools import wraps
 from qqbot import Message
 from . import bot_api
 from .modules.avatar_guess.avatar_guess import avatar_guess, on_input_chara_name
@@ -8,14 +9,21 @@ from .modules.aichat.aichat import ai_reply
 from .modules.pcr_rank.rank import pcr_rank_choose, pcr_rank_bili, pcr_rank_tw
 from .modules.pokemanpcr.poke_man_pcr import (poke_back, storage)
 
-async def on_message(ev, message: Message):
+chan_avatar = '' #猜头像子频道
+chan_poke = ''   #戳一戳子频道
+
+
+on_fullmatch = bot_api.on_fullmatch
+
+
+async def handler_message(ev, message: Message):
     msg = message.content
+    cid = message.channel_id
+    gid = message.guild_id
     if msg is None:
         return
     #猜头像
-    if msg == '猜头像':
-        await avatar_guess(ev,message)
-
+    await on_fullmatch('猜头像',avatar_guess,ev,message,chan_avatar)
         #猜头像获取答案
     await on_input_chara_name(ev,message)
 
@@ -26,33 +34,17 @@ async def on_message(ev, message: Message):
 
     #rank表
         #选择rank表
-    if msg == ('rank' or 'rank表'):
-        await pcr_rank_choose(ev,message)
+    await on_fullmatch(['rank','rank表'],pcr_rank_choose,ev,message)
 
         #B服rank
-    if msg == ('brank' or 'Brank' or '国rank' or '陆rank'):
-        await pcr_rank_bili(ev,message)
+    await on_fullmatch(['brank','Brank','国rank','陆rank'],pcr_rank_bili,ev,message)
 
         #台服rank
-    if msg == '台rank':
-        await pcr_rank_tw(ev,message)
-
+    await on_fullmatch('台rank',pcr_rank_tw,ev,message)
     
-    #戳一戳集卡
-        #融合卡片
-    #if msg == ('一键献祭' or '一键合成' or '一键融合' or '全部献祭' or '全部合成' or '全部融合'):
-    #    await auto_mix_card(ev,message)
-    
-    if msg == '查看仓库':
-        await storage(ev,message)
 
-
-async def on_message_atme(ev,message: Message):
-    msg = message.content
-    if msg is None:
-        return
-    _re = re.match(r'<(.*)>  (.*)',msg)
-    msg = _re.group(2)
     #戳一戳集卡
-    if msg == '戳':
-        await poke_back(ev,message)
+        #戳
+    await on_fullmatch('戳',poke_back,ev,message,chan_poke,True)
+        #查看仓库
+    await on_fullmatch('查看仓库',storage,ev,message,chan_poke)
